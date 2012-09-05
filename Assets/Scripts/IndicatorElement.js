@@ -11,6 +11,6 @@ function Start() {
 }
 
 function Update() {
-	meter = Mathf.Max(meter * Mathf.Exp(-10.0 * Time.deltaTime), analyzer.levels[index]);
+	meter = Mathf.Max(meter * Mathf.Exp(-10.0 * Time.deltaTime), analyzer.bandLevels[index]);
 	transform.localScale.y = meter * 40.0;
 }
