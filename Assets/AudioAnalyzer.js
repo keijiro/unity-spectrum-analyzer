@@ -3,14 +3,19 @@
 var interval = 0.01;
 
 @HideInInspector
-var rawSpectrum = new float[512];
+var rawSpectrum : float[];
 
 @HideInInspector
-var levels = new float[4];
+var levels : float[];
+
+function Awake() {
+	rawSpectrum = new float[1024];
+	levels = new float[8];
+}
 
 function Start() {
 	while (true) {
-		AudioListener.GetSpectrumData(rawSpectrum, 0, FFTWindow.Hamming);
+		AudioListener.GetSpectrumData(rawSpectrum, 0, FFTWindow.BlackmanHarris);
 		ConvertRawSpectrumToLevels();
 		yield WaitForSeconds(interval);
 	}
@@ -21,19 +26,15 @@ private function ConvertRawSpectrumToLevels() {
 		levels[i] = 0.0;
 	}
 
-	for (i = 1; i < 5; i++) {
-		levels[0] += rawSpectrum[i];
-	}
-
-	for (; i < 64; i++) {
-		levels[1] += rawSpectrum[i];
-	}
-
-	for (; i < 256; i++) {
-		levels[2] += rawSpectrum[i];
-	}
-
-	for (; i < rawSpectrum.Length; i++) {
-		levels[3] += rawSpectrum[i];
+	var i2 = 0;
+	var C = Mathf.Log(rawSpectrum.Length);
+	for (i = 0; i < levels.Length; i++) {
+		var x = 1.0 / levels.Length * (i + 1);
+		x = Mathf.Exp(C * x);
+		var w = 1.0 / (x - i2);
+		for (; i2 < x; i2++) {
+			levels[i] += w * rawSpectrum[i2];
+		}
+		levels[i] = Mathf.Sqrt(levels[i]);
 	}
 }
